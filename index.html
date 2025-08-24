@@ -35,7 +35,6 @@
       z-index: 10;
       text-align: center;
       width: 90%;
-      transition: opacity 0.3s;
     }
     #smartLessaBtn {
       position: fixed;
@@ -61,10 +60,15 @@
   <div id="scanText">Наведи на зображення</div>
 
   <a-scene embedded id="arScene" arjs="sourceType: webcam; detectionMode: mono; trackingMethod: best;">
+    <a-assets>
+      <img id="markerImage" src="marker.png">
+      <audio id="markerAudio" src="audio.mp3" preload="auto"></audio>
+    </a-assets>
+
     <a-marker id="marker" type="pattern" url="marker.patt">
-      <a-image id="arImage" src="marker.png" position="0 0 0" rotation="-90 0 0" width="2" height="2" visible="false"></a-image>
-      <a-entity id="arAudio" sound="src: audio.mp3; autoplay: false" visible="false"></a-entity>
+      <a-image id="arImage" src="#markerImage" position="0 0 0" rotation="-90 0 0" width="2" height="2"></a-image>
     </a-marker>
+
     <a-entity camera></a-entity>
   </a-scene>
 
@@ -74,43 +78,18 @@
   <script>
     const marker = document.getElementById('marker');
     const scanText = document.getElementById('scanText');
-    const arImage = document.getElementById('arImage');
-    const arAudio = document.getElementById('arAudio');
+    const audio = document.getElementById('markerAudio');
 
     marker.addEventListener('markerFound', () => {
-      console.log('Маркер виявлено!');
-      scanText.style.opacity = '0';
-      arImage.setAttribute('visible', 'true');
-      arAudio.setAttribute('visible', 'true');
-      arAudio.components.sound.playSound();
+      scanText.style.display = 'none';
+      audio.play();
     });
 
     marker.addEventListener('markerLost', () => {
-      console.log('Маркер втрачено');
-      scanText.style.opacity = '1';
-      arImage.setAttribute('visible', 'false');
-      arAudio.components.sound.stopSound();
-      arAudio.setAttribute('visible', 'false');
+      scanText.style.display = 'block';
+      audio.pause();
+      audio.currentTime = 0; // почати з початку при наступному виявленні
     });
-
-    // Обробка помилок завантаження
-    arImage.addEventListener('error', () => {
-      scanText.textContent = 'Помилка завантаження marker.png';
-      scanText.style.color = 'red';
-    });
-
-    arAudio.addEventListener('error', () => {
-      scanText.textContent = 'Помилка завантаження audio.mp3';
-      scanText.style.color = 'red';
-    });
-
-    // Перевірка доступу до камери
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(() => console.log('Камера доступна'))
-      .catch(err => {
-        scanText.textContent = 'Помилка камери: ' + err.message;
-        scanText.style.color = 'red';
-      });
 
     // Фікс висоти для мобільних браузерів
     function fixHeight() {
@@ -121,3 +100,4 @@
   </script>
 </body>
 </html>
+
